@@ -191,6 +191,32 @@ function pfire(canvas, options) {
         }
     }
     
+    this.starburst = function() {
+        x = Math.random() * this.W>>0;
+        y = Math.random() * this.H>>0;
+        d = 0;
+        di = 360 / this.particles.length;
+        
+        for(var t = 0; t < this.particles.length; t++) {
+            var p = this.particles[t];
+            p.x = x;
+            p.y = y;
+            p.direction = d;
+            d += di;
+            p.velocity = 1;
+        }
+    }
+    
+    this.randomize = function() {
+        for(var t = 0; t < this.particles.length; t++) {
+            var p = this.particles[t];
+            p.x = Math.random() * this.W>>0;
+            p.y = Math.random() * this.H>>0;
+            p.direction = Math.random() * 360;
+            p.velocity = 1;
+        }
+    }
+    
     var self = this;
     
     this.interval = setInterval(function() { self.draw(); }, this.world.fps);
