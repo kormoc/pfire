@@ -13,12 +13,11 @@
         
     </head>
     <body>
-        <canvas id="canvas" width="500" height="500"></canvas>
-        
-<script>
-    pf = new pfire( '#canvas', {} );
-    pf.addParticles(500);
-</script>
-        
+        <canvas id="canvas"></canvas>
+        <script>
+            pf = new pfire('#canvas', {});
+            pf.updateSize($(document).width(), $(document).height());
+            pf.addParticles(500);
+        </script>
     </body>
 </html>

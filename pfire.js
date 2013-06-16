@@ -129,7 +129,8 @@ function particle(pfire) {
 
 
 function pfire(canvas, options) {
-    this.canvas = $(canvas).get(0);
+    this.canvasid = canvas;
+    this.canvas = $(this.canvasid).get(0);
     this.ctx = this.canvas.getContext("2d");
     
     //Canvas dimensions
@@ -228,6 +229,20 @@ function pfire(canvas, options) {
             p.direction = Math.random() * 360;
             p.velocity = 1;
         }
+    }
+    
+    this.updateSize = function(W, H) {
+        this.canvas.style.width = W+"px";
+        this.canvas.style.height = H+"px";
+        
+        W *= window.devicePixelRatio;
+        H *= window.devicePixelRatio;
+        
+        this.W = W;
+        this.H = H;
+        
+        this.canvas.width = W;
+        this.canvas.height = H;
     }
     
     var self = this;
