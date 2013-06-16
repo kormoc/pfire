@@ -1,41 +1,41 @@
 function particle(pfire) {
     this.x = Math.random()*pfire.W>>0;
     this.y = Math.random()*pfire.H>>0;
-    
+
     // Degree of direction
     // 0-360
     this.direction = Math.random()*360>>0;
-    
+
     this.color = {
         'r': Math.random()*255>>0,
         'g': Math.random()*255>>0,
         'b': Math.random()*255>>0,
     }
-    
+
     this.size = 2 * window.devicePixelRatio;
-    
+
     // Speed
     this.setVelocity = function(velocity) {
         this.velocity = velocity;
         this.vx = this.velocity * Math.cos(this.direction);
         this.vy = this.velocity * Math.sin(this.direction);
     }
-    
+
     this.setVelocity(1);
-    
+
     this.getColor = function() {
         if (pfire.world.colors == 'global')
             return "rgba("+pfire.world.color.r+", "+pfire.world.color.g+", "+pfire.world.color.b+", 0.5)";
         else
             return "rgba("+this.color.r+", "+this.color.g+", "+this.color.b+", 0.5)";
     }
-    
+
     this.move = function() {
         this.x += this.vx;
         this.y += this.vy;
-        
+
         this.vy += pfire.world.gpf;
-        
+
         if (this.x < 0) {
             this.x = Math.abs(this.x);
             this.vx *= -0.75;
@@ -46,7 +46,7 @@ function particle(pfire) {
             this.vx *= -0.75;
             this.direction = (2*90-this.direction-180);
         }
-        
+
         if (this.y < 0) {
             this.y = Math.abs(this.y);
             this.vy *= -0.75;
@@ -57,60 +57,60 @@ function particle(pfire) {
             this.vy *= -0.75;
             this.direction = (2*0-this.direction-180);
         }
-        
+
         if (this.direction < 0) {
             this.direction += 360;
         }
         if (this.direction > 360) {
             this.direction %= 360;
         }
-        
+
         if (this.vx > pfire.world.max_velocity)
             this.vx = pfire.world.max_velocity;
         if (this.vx < 0-pfire.world.max_velocity)
             this.vx = 0-pfire.world.max_velocity;
-            
+
         if (this.vy > pfire.world.max_velocity)
             this.vy = pfire.world.max_velocity;
         if (this.vy < 0-pfire.world.max_velocity)
             this.vy = 0-pfire.world.max_velocity;
     }
-    
+
     this.draw = function(ctx) {
         ctx.beginPath();
         var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-		gradient.addColorStop(0, this.getColor());
-		gradient.addColorStop(1, "black");
-		
-		ctx.fillStyle = gradient;
-		ctx.arc(this.x, this.y, this.size, Math.PI*2, false);
-		ctx.fill();
+        gradient.addColorStop(0, this.getColor());
+        gradient.addColorStop(1, "black");
+
+        ctx.fillStyle = gradient;
+        ctx.arc(this.x, this.y, this.size, Math.PI*2, false);
+        ctx.fill();
     }
-    
+
     this.updateColor = function() {
         if (Math.random()*3>>0)
             this.color.r = this.color.r + (Math.random()*7>>0)-3;
-            
+
         if (Math.random()*3>>0)
             this.color.g = this.color.g + (Math.random()*7>>0)-3;
-            
+
         if (Math.random()*3>>0)
             this.color.b = this.color.b + (Math.random()*7>>0)-3;
-        
+
         if (this.color.r < 90) {
             this.color.r = 90;
         }
         if (this.color.r > 255) {
             this.color.r = 255;
         }
-        
+
         if (this.color.g < 90) {
             this.color.g = 90;
         }
         if (this.color.g > 255) {
             this.color.g = 255;
         }
-        
+
         if (this.color.g < 90) {
             this.color.g = 90;
         }
@@ -125,13 +125,13 @@ function pfire(canvas, options) {
     this.canvasid = canvas;
     this.canvas = $(this.canvasid).get(0);
     this.ctx = this.canvas.getContext("2d");
-    
+
     //Canvas dimensions
     this.W = this.canvas.width;
     this.H = this.canvas.height;
     this.particles = [];
     this.MAX_PARTICLES = 1;
-    
+
     this.world = {
         'gravity':          options.gravity         || .5,
         // Colors for particles?
@@ -148,47 +148,47 @@ function pfire(canvas, options) {
         'max_velocity':     options.max_velocity    || 2,
         'in_air_height':    options.in_air_height   || 50,
     }
-    
+
     // Calculate the gravity per frame
     this.world.gpf = this.world.gravity / (1000 / this.world.fps);
-    
+
     // Clear canvas
     this.ctx.globalCompositeOperation = "destination-over";
     this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
     this.ctx.fillRect(0, 0, this.W, this.H);
-    
+
     this.addParticle = function() {
         this.particles.push(new particle(this));
     }
-    
+
     this.addParticles = function(count) {
         for(var i = 0; i < count; i++)
             this.addParticle();
     }
-    
+
     this.draw = function() {
         this.ctx.globalCompositeOperation = "darker";
         this.ctx.fillStyle = "rgba(0, 0, 0, "+this.world.trail+")";
         this.ctx.fillRect(0, 0, this.W, this.H);
-    
+
         this.ctx.globalCompositeOperation = "lighter";
-        
+
         var inair = 0;
-    
+
         for(var t = 0; t < this.particles.length; t++)
         {
             var p = this.particles[t];
             p.draw(this.ctx);
             p.move();
             p.updateColor();
-        
+
             if (t == 0)
                 this.world.color = p.color;
-                
+
             if (p.y < this.H - this.world.in_air_height)
                 inair = 1;
         }
-        
+
         if (inair == 0) {
             if (Math.random() * 2>>0 == 0)
                 this.starburst();
@@ -196,7 +196,7 @@ function pfire(canvas, options) {
                 this.randomize();
         }
     }
-    
+
     this.starburst = function(x, y) {
         if (!x)
             x = Math.random() * this.W>>0;
@@ -204,7 +204,7 @@ function pfire(canvas, options) {
             y = Math.random() * this.H>>0;
         d = 0;
         di = 360 / this.particles.length;
-        
+
         for(var t = 0; t < this.particles.length; t++) {
             var p = this.particles[t];
             p.x = x;
@@ -214,7 +214,7 @@ function pfire(canvas, options) {
             p.setVelocity(Math.random() * 2);
         }
     }
-    
+
     this.randomize = function() {
         for(var t = 0; t < this.particles.length; t++) {
             var p = this.particles[t];
@@ -229,25 +229,25 @@ function pfire(canvas, options) {
         else
             this.world.colors='';
     }
-    
+
     this.updateSize = function(W, H) {
         this.canvas.style.width = W+"px";
         this.canvas.style.height = H+"px";
-        
+
         W *= window.devicePixelRatio;
         H *= window.devicePixelRatio;
-        
+
         this.W = W;
         this.H = H;
-        
+
         this.canvas.width = W;
         this.canvas.height = H;
     }
-    
+
     var self = this;
-    
+
     this.interval = setInterval(function() { self.draw(); }, this.world.fps);
-    
+
     $(this.canvasid).click(function(e){
         var target = event.target || event.srcElement;
         x = event.pageX - target.offsetLeft;
