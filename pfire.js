@@ -18,7 +18,7 @@ function particle(pfire) {
         'b': Math.random()*255>>0,
     }
     
-    this.size = 2;
+    this.size = 2 * window.devicePixelRatio;
     
     this.getcolor = function() {
         if (pfire.world.colors == 'global')
