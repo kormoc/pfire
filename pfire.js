@@ -153,6 +153,7 @@ function pfire(canvas, options) {
             'b': Math.random()*255>>0,
         },
         'max_velocity':     options.max_velocity    || 2,
+        'in_air_height':    options.in_air_height   || 10,
     }
     
     // Calculate the gravity per frame
@@ -178,6 +179,8 @@ function pfire(canvas, options) {
         this.ctx.fillRect(0, 0, this.W, this.H);
     
         this.ctx.globalCompositeOperation = "lighter";
+        
+        var inair = 0;
     
         for(var t = 0; t < this.particles.length; t++)
         {
@@ -188,6 +191,16 @@ function pfire(canvas, options) {
         
             if (t == 0)
                 this.world.color = p.color;
+                
+            if (p.y < this.H - this.world.in_air_height)
+                inair = 1;
+        }
+        
+        if (inair == 0) {
+            if (Math.random() * 2>>0 == 0)
+                this.starburst();
+            else
+                this.randomize();
         }
     }
     
