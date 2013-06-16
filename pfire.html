@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Particle Fire in HTM5</title>
+        <meta charset="utf-8">
+
+        <style>
+            
+        </style>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        
+    </head>
+    <body>
+        <canvas id="canvas" width="500" height="500"></canvas>
+        
+<script>
+var canvas = $('#canvas').get(0);
+var ctx = canvas.getContext("2d");
+
+//Canvas dimensions
+var W = canvas.width;
+var H = canvas.height;
+var particles = [];
+var MAX_PARTICLES = 1;
+
+var world = {
+    'gravity': 1,
+    'air_resistance': 0.01,
+    // Colors for particles?
+    'colors': 'global',
+    // Trail life
+    'trail': 0.05,
+    // Update Speed
+    'fps': 33,
+    'color': {
+        'r': Math.random()*255>>0,
+        'g': Math.random()*255>>0,
+        'b': Math.random()*255>>0,
+    },
+    'max_velocity': 2,
+}
+
+// Calculate the gravity per frame
+world.gpf = world.gravity / (1000 / world.fps);
+
+function particle() {
+    this.x = Math.random()*W>>0;
+    this.y = Math.random()*H>>0;
+    
+    // Degree of direction
+    // 0-360
+    this.direction = Math.random()*360>>0;
+    
+    // Speed
+    this.velocity = 1;
+    
+    // Mass for gravity
+    this.mass = 0;
+    
+    this.color = {
+        'r': Math.random()*255>>0,
+        'g': Math.random()*255>>0,
+        'b': Math.random()*255>>0,
+    }
+    
+    this.size = 2;
+    
+    this.getcolor = function() {
+        if (world.colors == 'global')
+            return "rgba("+world.color.r+", "+world.color.g+", "+world.color.b+", 0.5)";
+        else
+            return "rgba("+this.color.r+", "+this.color.g+", "+this.color.b+", 0.5)";
+    }
+    
+    this.move = function() {
+        this.x = this.x + (this.velocity * Math.sin(this.direction * Math.PI / 180));
+        this.y = this.y + (this.velocity * Math.cos(this.direction * Math.PI / 180));
+        
+        if (this.x < 0) {
+            this.x = Math.abs(this.x);
+            this.direction = (2*270-this.direction-180);
+        }
+        if (this.x > W) {
+            this.x = W - (this.x - W);
+            this.direction = (2*90-this.direction-180);
+        }
+        
+        if (this.y < 0) {
+            this.y = Math.abs(this.y);
+            this.direction = (2*180-this.direction-180);
+        }
+        if (this.y > H) {
+            this.y = H - (this.y - H);
+            this.direction = (2*0-this.direction-180);
+        }
+        
+        // Gravity
+        if (this.direction > 0 && this.direction < 180)
+            this.direction -= world.gpf;
+        else if (this.direction >= 180 && this.direction < 360)
+            this.direction += world.gpf;
+        
+        if (this.direction >= 90 && this.direction <= 270) {
+            if (this.velocity > 0) {
+                this.velocity -= world.gpf;
+            }
+            else {
+                this.velocity += world.gpf;
+                this.direction = (2*0-this.direction-180);
+            }
+        }
+        else
+            this.velocity += world.gpf;
+        
+        if (this.direction < 0) {
+            this.direction += 360;
+        }
+        if (this.direction > 360) {
+            this.direction %= 360;
+        }
+        
+        this.velocity -= world.air_resistance;
+        
+        if (this.velocity > world.max_velocity)
+            this.velocity = world.max_velocity;
+        if (this.velocity < 0)
+            this.velocity = 0;
+        
+    }
+    
+    this.draw = function(ctx) {
+        ctx.beginPath();
+        var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+		gradient.addColorStop(0, this.getcolor());
+		gradient.addColorStop(1, "black");
+		
+		ctx.fillStyle = gradient;
+		ctx.arc(this.x, this.y, this.size, Math.PI*2, false);
+		ctx.fill();
+    }
+    
+    this.updatecolor = function() {
+        if (Math.random()*3>>0)
+            this.color.r = this.color.r + (Math.random()*7>>0)-3;
+            
+        if (Math.random()*3>>0)
+            this.color.g = this.color.g + (Math.random()*7>>0)-3;
+            
+        if (Math.random()*3>>0)
+            this.color.b = this.color.b + (Math.random()*7>>0)-3;
+        
+        if (this.color.r < 90) {
+            this.color.r = 90;
+        }
+        if (this.color.r > 255) {
+            this.color.r = 255;
+        }
+        
+        if (this.color.g < 90) {
+            this.color.g = 90;
+        }
+        if (this.color.g > 255) {
+            this.color.g = 255;
+        }
+        
+        if (this.color.g < 90) {
+            this.color.g = 90;
+        }
+        if (this.color.g > 255) {
+            this.color.g = 255;
+        }
+    }
+}
+
+
+for(var i = 0; i < MAX_PARTICLES; i++)
+{
+	particles.push(new particle());
+}
+
+setInterval(function() {
+	ctx.globalCompositeOperation = "darker";
+	ctx.fillStyle = "rgba(0, 0, 0, "+world.trail+")";
+	ctx.fillRect(0, 0, W, H);
+	
+	ctx.globalCompositeOperation = "lighter";
+	
+	for(var t = 0; t < particles.length; t++)
+	{
+		var p = particles[t];
+        p.draw(ctx);
+        p.move();
+        p.updatecolor();
+        
+        if (t == 0)
+            world.color = p.color;
+	}
+    
+    
+},
+world.fps
+);
+
+</script>
+        
+    </body>
+</html>
