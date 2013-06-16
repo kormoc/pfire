@@ -23,7 +23,7 @@ function particle(pfire) {
     
     this.setVelocity(1);
     
-    this.getcolor = function() {
+    this.getColor = function() {
         if (pfire.world.colors == 'global')
             return "rgba("+pfire.world.color.r+", "+pfire.world.color.g+", "+pfire.world.color.b+", 0.5)";
         else
@@ -79,7 +79,7 @@ function particle(pfire) {
     this.draw = function(ctx) {
         ctx.beginPath();
         var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-		gradient.addColorStop(0, this.getcolor());
+		gradient.addColorStop(0, this.getColor());
 		gradient.addColorStop(1, "black");
 		
 		ctx.fillStyle = gradient;
@@ -87,7 +87,7 @@ function particle(pfire) {
 		ctx.fill();
     }
     
-    this.updatecolor = function() {
+    this.updateColor = function() {
         if (Math.random()*3>>0)
             this.color.r = this.color.r + (Math.random()*7>>0)-3;
             
@@ -180,7 +180,7 @@ function pfire(canvas, options) {
             var p = this.particles[t];
             p.draw(this.ctx);
             p.move();
-            p.updatecolor();
+            p.updateColor();
         
             if (t == 0)
                 this.world.color = p.color;
