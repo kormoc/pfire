@@ -197,9 +197,11 @@ function pfire(canvas, options) {
         }
     }
     
-    this.starburst = function() {
-        x = Math.random() * this.W>>0;
-        y = Math.random() * this.H>>0;
+    this.starburst = function(x, y) {
+        if (!x)
+            x = Math.random() * this.W>>0;
+        if (!y)
+            y = Math.random() * this.H>>0;
         d = 0;
         di = 360 / this.particles.length;
         
@@ -222,6 +224,10 @@ function pfire(canvas, options) {
             p.setVelocity(Math.random() * 2);
         }
         this.world.gravity = Math.random();
+        if (Math.random() * 2>>0)
+            this.world.colors='global';
+        else
+            this.world.colors='';
     }
     
     this.updateSize = function(W, H) {
@@ -241,6 +247,13 @@ function pfire(canvas, options) {
     var self = this;
     
     this.interval = setInterval(function() { self.draw(); }, this.world.fps);
+    
+    $(this.canvasid).click(function(e){
+        var target = event.target || event.srcElement;
+        x = event.pageX - target.offsetLeft;
+        y = event.pageY - target.offsetTop;
+        self.starburst(x, y);
+    });
 }
 
 
