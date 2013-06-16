@@ -6,12 +6,6 @@ function particle(pfire) {
     // 0-360
     this.direction = Math.random()*360>>0;
     
-    // Speed
-    this.velocity = 1;
-    
-    // Mass for gravity
-    this.mass = 0;
-    
     this.color = {
         'r': Math.random()*255>>0,
         'g': Math.random()*255>>0,
@@ -19,6 +13,15 @@ function particle(pfire) {
     }
     
     this.size = 2 * window.devicePixelRatio;
+    
+    // Speed
+    this.setVelocity = function(velocity) {
+        this.velocity = velocity;
+        this.vx = this.velocity * Math.cos(this.direction);
+        this.vy = this.velocity * Math.sin(this.direction);
+    }
+    
+    this.setVelocity(1);
     
     this.getcolor = function() {
         if (pfire.world.colors == 'global')
@@ -28,44 +31,32 @@ function particle(pfire) {
     }
     
     this.move = function() {
-        this.x = this.x + (this.velocity * Math.sin(this.direction * Math.PI / 180));
-        this.y = this.y + (this.velocity * Math.cos(this.direction * Math.PI / 180));
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        this.vy += pfire.world.gpf;
         
         if (this.x < 0) {
             this.x = Math.abs(this.x);
+            this.vx *= -0.75;
             this.direction = (2*270-this.direction-180);
         }
         if (this.x > pfire.W) {
             this.x = pfire.W - (this.x - pfire.W);
+            this.vx *= -0.75;
             this.direction = (2*90-this.direction-180);
         }
         
         if (this.y < 0) {
             this.y = Math.abs(this.y);
+            this.vy *= -0.75;
             this.direction = (2*180-this.direction-180);
         }
         if (this.y > pfire.H) {
             this.y = pfire.H - (this.y - pfire.H);
+            this.vy *= -0.75;
             this.direction = (2*0-this.direction-180);
         }
-        
-        // Gravity
-        if (this.direction > 0 && this.direction < 180)
-            this.direction -= pfire.world.gpf;
-        else if (this.direction >= 180 && this.direction < 360)
-            this.direction += pfire.world.gpf;
-        
-        if (this.direction >= 90 && this.direction <= 270) {
-            if (this.velocity > 0) {
-                this.velocity -= pfire.world.gpf;
-            }
-            else {
-                this.velocity += pfire.world.gpf;
-                this.direction = (2*0-this.direction-180);
-            }
-        }
-        else
-            this.velocity += pfire.world.gpf;
         
         if (this.direction < 0) {
             this.direction += 360;
@@ -74,13 +65,15 @@ function particle(pfire) {
             this.direction %= 360;
         }
         
-        this.velocity -= pfire.world.air_resistance;
-        
-        if (this.velocity > pfire.world.max_velocity)
-            this.velocity = pfire.world.max_velocity;
-        if (this.velocity < 0)
-            this.velocity = 0;
-        
+        if (this.vx > pfire.world.max_velocity)
+            this.vx = pfire.world.max_velocity;
+        if (this.vx < 0-pfire.world.max_velocity)
+            this.vx = 0-pfire.world.max_velocity;
+            
+        if (this.vy > pfire.world.max_velocity)
+            this.vy = pfire.world.max_velocity;
+        if (this.vy < 0-pfire.world.max_velocity)
+            this.vy = 0-pfire.world.max_velocity;
     }
     
     this.draw = function(ctx) {
@@ -140,8 +133,7 @@ function pfire(canvas, options) {
     this.MAX_PARTICLES = 1;
     
     this.world = {
-        'gravity':          options.gravity         || 1,
-        'air_resistance':   options.air_resistance  || 0.01,
+        'gravity':          options.gravity         || .5,
         // Colors for particles?
         'colors':           options.colors          || 'global',
         // Trail life
@@ -154,7 +146,7 @@ function pfire(canvas, options) {
             'b': Math.random()*255>>0,
         },
         'max_velocity':     options.max_velocity    || 2,
-        'in_air_height':    options.in_air_height   || 10,
+        'in_air_height':    options.in_air_height   || 50,
     }
     
     // Calculate the gravity per frame
@@ -217,7 +209,7 @@ function pfire(canvas, options) {
             p.y = y;
             p.direction = d;
             d += di;
-            p.velocity = 1;
+            p.setVelocity(Math.random() * 2);
         }
     }
     
@@ -227,8 +219,9 @@ function pfire(canvas, options) {
             p.x = Math.random() * this.W>>0;
             p.y = Math.random() * this.H>>0;
             p.direction = Math.random() * 360;
-            p.velocity = 1;
+            p.setVelocity(Math.random() * 2);
         }
+        this.world.gravity = Math.random();
     }
     
     this.updateSize = function(W, H) {
