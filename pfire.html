@@ -66,10 +66,7 @@
                     step:   25,
                     slide: function( event, ui ) {
                         $( "#particles_amount" ).text( ui.value );
-                        while (pf.particles.length > ui.value)
-                            pf.particles.pop();
-                        while (pf.particles.length < ui.value)
-                            pf.addParticle();
+                        $('#canvas').data('pfire').setParticles(ui.value);
                     },
                 });
                 $( "#particles_amount" ).text( $( "#particles" ).slider( "value" ));
@@ -81,7 +78,7 @@
                     step:   .05,
                     slide: function( event, ui ) {
                         $( "#gravity_amount" ).text( ui.value );
-                        pf.setGravity(ui.value);
+                        $('#canvas').data('pfire').setGravity(ui.value);
                     }
                 });
                 $( "#gravity_amount" ).text( $( "#gravity" ).slider( "value" ));
@@ -93,7 +90,7 @@
                     step:   1,
                     slide: function( event, ui ) {
                         $( "#max_velocity_amount" ).text( ui.value );
-                        pf.world.max_velocity = ui.value;
+                        $('#canvas').data('pfire').settings.max_velocity = ui.value;
                     }
                 });
                 $( "#max_velocity_amount" ).text( $( "#max_velocity" ).slider( "value" ));
@@ -105,7 +102,7 @@
                     step:   1,
                     slide: function( event, ui ) {
                         $( "#velocity_multiplier_amount" ).text( ui.value );
-                        pf.world.velocity_multiplier = ui.value;
+                        $('#canvas').data('pfire').settings.velocity_multiplier = ui.value;
                     }
                 });
                 $( "#velocity_multiplier_amount" ).text( $( "#velocity_multiplier" ).slider( "value" ));
@@ -117,7 +114,7 @@
                     step:   25,
                     slide: function( event, ui ) {
                         $( "#in_air_height_amount" ).text( ui.value );
-                        pf.world.in_air_height = ui.value;
+                        $('#canvas').data('pfire').settings.in_air_height = ui.value;
                     }
                 });
                 $( "#in_air_height_amount" ).text( $( "#in_air_height" ).slider( "value" ));
@@ -129,28 +126,28 @@
                     step:   0.001,
                     slide: function( event, ui ) {
                         $( "#trail_length_amount" ).text( ui.value );
-                        pf.world.trail = ui.value;
+                        $('#canvas').data('pfire').settings.trail = ui.value;
                     }
                 });
                 $( "#trail_length_amount" ).text( $( "#trail_length" ).slider( "value" ));
 
                 $( "#colors" ).buttonset();
 
-                $( "#single_color").change(function() { pf.world.colors = 'global'; });
-                $( "#rainbow_color").change(function() { pf.world.colors = ''; });
+                $( "#single_color").change(function() { $('#canvas').data('pfire').settings.colors = 'global'; });
+                $( "#rainbow_color").change(function() { $('#canvas').data('pfire').settings.colors = 'single'; });
 
-                $( "#randomize" ).button().click(function( event ) { pf.randomize(); });
-                $( "#starburst" ).button().click(function( event ) { pf.starburst(); });
+                $( "#randomize" ).button().click(function( event ) { $('#canvas').data('pfire').randomize(); });
+                $( "#starburst" ).button().click(function( event ) { $('#canvas').data('pfire').starburst(); });
 
-                pf = new pfire('#canvas', {
+                $('#canvas').pfire({
                     'gravity':              $( "#gravity" ).slider( "value" ),
                     'max_velocity':         $( "#max_velocity" ).slider( "value" ),
                     'velocity_multiplier':  $( "#velocity_multiplier" ).slider( "value" ),
                     'in_air_height_amount': $( "#in_air_height" ).slider( "value" ),
+                    'W':                    $(document).width()-40,
+                    'H':                    $(document).height()-40,
+                    'particles':            $( "#particles" ).slider( "value" )
                 });
-
-                pf.updateSize($(document).width()-40, $(document).height()-40);
-                pf.addParticles($( "#particles" ).slider( "value" ));
             });
 
 

@@ -1,260 +1,301 @@
-function particle(pfire) {
-    this.x = Math.random()*pfire.W>>0;
-    this.y = Math.random()*pfire.H>>0;
+(function($) {
+    $.pfire = function(element, options) {
+        var defaults = {
+            'gravity':              .5,
+            // Colors for particles?
+            'colors':               'global',
+            // Trail life
+            'trail':                0.05,
+            // Update Speed
+            'fps':                  16,
+            'color': {
+                'r':                Math.random()*255>>0,
+                'g':                Math.random()*255>>0,
+                'b':                Math.random()*255>>0,
+            },
+            'max_velocity':         2,
+            'velocity_multiplier':  1,
+            'in_air_height':        50,
+            'W':                    undefined,
+            'H':                    undefined,
+            'particles':            undefined
+        }
 
-    // Degree of direction
-    // 0-360
-    this.direction = Math.random()*360>>0;
+        var plugin = this;
 
-    this.color = {
-        'r': Math.random()*255>>0,
-        'g': Math.random()*255>>0,
-        'b': Math.random()*255>>0,
+        plugin.settings = {}
+
+        var $element = $(element),  // reference to the jQuery version of DOM element the plugin is attached to
+             element = element;        // reference to the actual DOM element
+
+        plugin.init = function() {
+            plugin.settings = $.extend({}, defaults, options);
+            
+            if (!plugin.settings.W)
+                plugin.settings.W = $element.width;
+            if (!plugin.settings.H)
+                plugin.settings.H = $element.height;
+                
+            plugin.updateSize(plugin.settings.W, plugin.settings.H);
+            
+            plugin.particles = [];
+            plugin.ctx = element.getContext("2d");
+            
+            // Init some settings
+            plugin.setGravity();
+
+            // Clear canvas
+            plugin.ctx.globalCompositeOperation = "destination-over";
+            plugin.ctx.fillStyle = "rgba(0, 0, 0, 1)";
+            plugin.ctx.fillRect(0, 0, plugin.settings.W, plugin.settings.H);
+            
+            if (plugin.settings.particles)
+                plugin.addParticles(plugin.settings.particles);
+                
+
+            // Start rendering
+            plugin.interval = setInterval(function() { plugin.draw(); }, plugin.settings.fps);
+            
+            $element.click(function(e){
+                var target = event.target || event.srcElement;
+                x = event.pageX - target.offsetLeft;
+                y = event.pageY - target.offsetTop;
+                plugin.starburst(x, y);
+            })
+            
+        }
+        
+        plugin.addParticle = function() {
+            plugin.particles.push(new plugin.particle(plugin));
+            plugin.settings.particles += 1;
+        }
+        
+        plugin.addParticles = function(count) {
+            for(var i = 0; i < count; i++)
+                plugin.addParticle();
+            plugin.settings.particles += count;
+        }
+        
+        plugin.setParticles = function(count) {
+            while (plugin.particles.length > count)
+                plugin.particles.pop();
+            while (plugin.particles.length < count)
+                plugin.addParticle();
+                
+            plugin.settings.particles = count;
+        }
+        
+        plugin.draw = function() {
+            plugin.ctx.globalCompositeOperation = "darker";
+            plugin.ctx.fillStyle = "rgba(0, 0, 0, "+plugin.settings.trail+")";
+            plugin.ctx.fillRect(0, 0, plugin.settings.W, plugin.settings.H);
+    
+            plugin.ctx.globalCompositeOperation = "lighter";
+    
+            var inair = 0;
+    
+            for(var t = 0; t < plugin.particles.length; t++)
+            {
+                var p = plugin.particles[t];
+                p.draw(plugin.ctx);
+                p.move();
+                p.updateColor();
+    
+                if (t == 0)
+                    plugin.settings.color = p.color;
+    
+                if (p.y < plugin.settings.H - plugin.settings.in_air_height)
+                    inair = 1;
+            }
+    
+            if (inair == 0) {
+                if (Math.random() * 2>>0 == 0)
+                    plugin.starburst();
+                else
+                    plugin.randomize();
+            }
+        }
+        
+        plugin.starburst = function(x, y) {
+            if (!x)
+                x = Math.random() * plugin.settings.W>>0;
+            if (!y)
+                y = Math.random() * plugin.settings.H>>0;
+            d = 0;
+            di = 360 / plugin.particles.length;
+    
+            for(var t = 0; t < plugin.particles.length; t++) {
+                var p = plugin.particles[t];
+                p.x = x;
+                p.y = y;
+                p.direction = d;
+                d += di;
+                p.setVelocity(Math.random() * 2);
+            }
+        }
+        
+        plugin.randomize = function() {
+            for(var t = 0; t < plugin.particles.length; t++) {
+                var p = plugin.particles[t];
+                p.x = Math.random() * plugin.settings.W>>0;
+                p.y = Math.random() * plugin.settings.H>>0;
+                p.direction = Math.random() * 360;
+                p.setVelocity(Math.random() * 2);
+            }
+        }
+        
+        plugin.updateSize = function(W, H) {
+            element.style.width = W+"px";
+            element.style.height = H+"px";
+    
+            W *= window.devicePixelRatio;
+            H *= window.devicePixelRatio;
+    
+            plugin.settings.W = W;
+            plugin.settings.H = H;
+    
+            element.width = W;
+            element.height = H;
+        }
+        
+        plugin.setGravity = function(gravity) {
+            if (gravity)
+                plugin.settings.gravity = gravity;
+            plugin.settings.gpf = plugin.settings.gravity / (1000 / plugin.settings.fps);
+        }
+        
+        plugin.particle = function(plugin) {
+            this.x = Math.random()*plugin.settings.W>>0;
+            this.y = Math.random()*plugin.settings.H>>0;
+        
+            // Degree of direction
+            // 0-360
+            this.direction = Math.random()*360>>0;
+        
+            this.color = {
+                'r': Math.random()*255>>0,
+                'g': Math.random()*255>>0,
+                'b': Math.random()*255>>0,
+            }
+        
+            this.size = 2 * window.devicePixelRatio;
+        
+            // Speed
+            this.setVelocity = function(velocity) {
+                this.velocity = velocity;
+                this.vx = this.velocity * Math.cos(this.direction);
+                this.vy = this.velocity * Math.sin(this.direction);
+            }
+        
+            this.setVelocity(1);
+        
+            this.getColor = function() {
+                if (plugin.settings.colors == 'global')
+                    return "rgba("+plugin.settings.color.r+", "+plugin.settings.color.g+", "+plugin.settings.color.b+", 0.5)";
+                else
+                    return "rgba("+this.color.r+", "+this.color.g+", "+this.color.b+", 0.5)";
+            }
+        
+            this.move = function() {
+                this.x += this.vx * plugin.settings.velocity_multiplier;
+                this.y += this.vy * plugin.settings.velocity_multiplier;
+        
+                this.vy += plugin.settings.gpf;
+        
+                if (this.x < 0) {
+                    this.x = Math.abs(this.x);
+                    this.vx *= -0.75;
+                    this.direction = (2*270-this.direction-180);
+                }
+                if (this.x > plugin.settings.W) {
+                    this.x = plugin.settings.W - (this.x - plugin.settings.W);
+                    this.vx *= -0.75;
+                    this.direction = (2*90-this.direction-180);
+                }
+        
+                if (this.y < 0) {
+                    this.y = Math.abs(this.y);
+                    this.vy *= -0.75;
+                    this.direction = (2*180-this.direction-180);
+                }
+                if (this.y > plugin.settings.H) {
+                    this.y = plugin.settings.H - (this.y - plugin.settings.H);
+                    this.vy *= -0.75;
+                    this.direction = (2*0-this.direction-180);
+                }
+        
+                if (this.direction < 0) {
+                    this.direction += 360;
+                }
+                if (this.direction > 360) {
+                    this.direction %= 360;
+                }
+        
+                if (this.vx > plugin.settings.max_velocity)
+                    this.vx = plugin.settings.max_velocity;
+                if (this.vx < 0-plugin.settings.max_velocity)
+                    this.vx = 0-plugin.settings.max_velocity;
+        
+                if (this.vy > plugin.settings.max_velocity)
+                    this.vy = plugin.settings.max_velocity;
+                if (this.vy < 0-plugin.settings.max_velocity)
+                    this.vy = 0-plugin.settings.max_velocity;
+            }
+        
+            this.draw = function(ctx) {
+                ctx.beginPath();
+                var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, this.getColor());
+                gradient.addColorStop(1, "black");
+        
+                ctx.fillStyle = gradient;
+                ctx.arc(this.x, this.y, this.size, Math.PI*2, false);
+                ctx.fill();
+            }
+        
+            this.updateColor = function() {
+                if (Math.random()*3>>0)
+                    this.color.r = this.color.r + (Math.random()*7>>0)-3;
+        
+                if (Math.random()*3>>0)
+                    this.color.g = this.color.g + (Math.random()*7>>0)-3;
+        
+                if (Math.random()*3>>0)
+                    this.color.b = this.color.b + (Math.random()*7>>0)-3;
+        
+                if (this.color.r < 90) {
+                    this.color.r = 90;
+                }
+                if (this.color.r > 255) {
+                    this.color.r = 255;
+                }
+        
+                if (this.color.g < 90) {
+                    this.color.g = 90;
+                }
+                if (this.color.g > 255) {
+                    this.color.g = 255;
+                }
+        
+                if (this.color.g < 90) {
+                    this.color.g = 90;
+                }
+                if (this.color.g > 255) {
+                    this.color.g = 255;
+                }
+            }
+        }
+
+        plugin.init();
     }
 
-    this.size = 2 * window.devicePixelRatio;
-
-    // Speed
-    this.setVelocity = function(velocity) {
-        this.velocity = velocity;
-        this.vx = this.velocity * Math.cos(this.direction);
-        this.vy = this.velocity * Math.sin(this.direction);
+    // add the plugin to the jQuery.fn object
+    $.fn.pfire = function(options) {
+        return this.each(function() {
+            if (undefined == $(this).data('pfire')) {
+                var plugin = new $.pfire(this, options);
+                $(this).data('pfire', plugin);
+            }
+        });
     }
-
-    this.setVelocity(1);
-
-    this.getColor = function() {
-        if (pfire.world.colors == 'global')
-            return "rgba("+pfire.world.color.r+", "+pfire.world.color.g+", "+pfire.world.color.b+", 0.5)";
-        else
-            return "rgba("+this.color.r+", "+this.color.g+", "+this.color.b+", 0.5)";
-    }
-
-    this.move = function() {
-        this.x += this.vx * pfire.world.velocity_multiplier;
-        this.y += this.vy * pfire.world.velocity_multiplier;
-
-        this.vy += pfire.world.gpf;
-
-        if (this.x < 0) {
-            this.x = Math.abs(this.x);
-            this.vx *= -0.75;
-            this.direction = (2*270-this.direction-180);
-        }
-        if (this.x > pfire.W) {
-            this.x = pfire.W - (this.x - pfire.W);
-            this.vx *= -0.75;
-            this.direction = (2*90-this.direction-180);
-        }
-
-        if (this.y < 0) {
-            this.y = Math.abs(this.y);
-            this.vy *= -0.75;
-            this.direction = (2*180-this.direction-180);
-        }
-        if (this.y > pfire.H) {
-            this.y = pfire.H - (this.y - pfire.H);
-            this.vy *= -0.75;
-            this.direction = (2*0-this.direction-180);
-        }
-
-        if (this.direction < 0) {
-            this.direction += 360;
-        }
-        if (this.direction > 360) {
-            this.direction %= 360;
-        }
-
-        if (this.vx > pfire.world.max_velocity)
-            this.vx = pfire.world.max_velocity;
-        if (this.vx < 0-pfire.world.max_velocity)
-            this.vx = 0-pfire.world.max_velocity;
-
-        if (this.vy > pfire.world.max_velocity)
-            this.vy = pfire.world.max_velocity;
-        if (this.vy < 0-pfire.world.max_velocity)
-            this.vy = 0-pfire.world.max_velocity;
-    }
-
-    this.draw = function(ctx) {
-        ctx.beginPath();
-        var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-        gradient.addColorStop(0, this.getColor());
-        gradient.addColorStop(1, "black");
-
-        ctx.fillStyle = gradient;
-        ctx.arc(this.x, this.y, this.size, Math.PI*2, false);
-        ctx.fill();
-    }
-
-    this.updateColor = function() {
-        if (Math.random()*3>>0)
-            this.color.r = this.color.r + (Math.random()*7>>0)-3;
-
-        if (Math.random()*3>>0)
-            this.color.g = this.color.g + (Math.random()*7>>0)-3;
-
-        if (Math.random()*3>>0)
-            this.color.b = this.color.b + (Math.random()*7>>0)-3;
-
-        if (this.color.r < 90) {
-            this.color.r = 90;
-        }
-        if (this.color.r > 255) {
-            this.color.r = 255;
-        }
-
-        if (this.color.g < 90) {
-            this.color.g = 90;
-        }
-        if (this.color.g > 255) {
-            this.color.g = 255;
-        }
-
-        if (this.color.g < 90) {
-            this.color.g = 90;
-        }
-        if (this.color.g > 255) {
-            this.color.g = 255;
-        }
-    }
-}
-
-
-function pfire(canvas, options) {
-    this.canvasid = canvas;
-    this.canvas = $(this.canvasid).get(0);
-    this.ctx = this.canvas.getContext("2d");
-
-    //Canvas dimensions
-    this.W = this.canvas.width;
-    this.H = this.canvas.height;
-    this.particles = [];
-    this.MAX_PARTICLES = 1;
-
-    this.world = {
-        'gravity':              options.gravity             || .5,
-        // Colors for particles?
-        'colors':               options.colors              || 'global',
-        // Trail life
-        'trail':                options.trail               || 0.05,
-        // Update Speed
-        'fps':                  options.fps                 || 16,
-        'color':                options.color               || {
-            'r': Math.random()*255>>0,
-            'g': Math.random()*255>>0,
-            'b': Math.random()*255>>0,
-        },
-        'max_velocity':         options.max_velocity        || 2,
-        'velocity_multiplier':  options.velocity_multiplier || 1,
-        'in_air_height':        options.in_air_height       || 50,
-
-    }
-
-    // Clear canvas
-    this.ctx.globalCompositeOperation = "destination-over";
-    this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
-    this.ctx.fillRect(0, 0, this.W, this.H);
-
-    this.addParticle = function() {
-        this.particles.push(new particle(this));
-    }
-
-    this.addParticles = function(count) {
-        for(var i = 0; i < count; i++)
-            this.addParticle();
-    }
-
-    this.draw = function() {
-        this.ctx.globalCompositeOperation = "darker";
-        this.ctx.fillStyle = "rgba(0, 0, 0, "+this.world.trail+")";
-        this.ctx.fillRect(0, 0, this.W, this.H);
-
-        this.ctx.globalCompositeOperation = "lighter";
-
-        var inair = 0;
-
-        for(var t = 0; t < this.particles.length; t++)
-        {
-            var p = this.particles[t];
-            p.draw(this.ctx);
-            p.move();
-            p.updateColor();
-
-            if (t == 0)
-                this.world.color = p.color;
-
-            if (p.y < this.H - this.world.in_air_height)
-                inair = 1;
-        }
-
-        if (inair == 0) {
-            if (Math.random() * 2>>0 == 0)
-                this.starburst();
-            else
-                this.randomize();
-        }
-    }
-
-    this.starburst = function(x, y) {
-        if (!x)
-            x = Math.random() * this.W>>0;
-        if (!y)
-            y = Math.random() * this.H>>0;
-        d = 0;
-        di = 360 / this.particles.length;
-
-        for(var t = 0; t < this.particles.length; t++) {
-            var p = this.particles[t];
-            p.x = x;
-            p.y = y;
-            p.direction = d;
-            d += di;
-            p.setVelocity(Math.random() * 2);
-        }
-    }
-
-    this.randomize = function() {
-        for(var t = 0; t < this.particles.length; t++) {
-            var p = this.particles[t];
-            p.x = Math.random() * this.W>>0;
-            p.y = Math.random() * this.H>>0;
-            p.direction = Math.random() * 360;
-            p.setVelocity(Math.random() * 2);
-        }
-    }
-
-    this.updateSize = function(W, H) {
-        this.canvas.style.width = W+"px";
-        this.canvas.style.height = H+"px";
-
-        W *= window.devicePixelRatio;
-        H *= window.devicePixelRatio;
-
-        this.W = W;
-        this.H = H;
-
-        this.canvas.width = W;
-        this.canvas.height = H;
-    }
-
-    this.setGravity = function(gravity) {
-        if (gravity)
-            this.world.gravity = gravity;
-        this.world.gpf = this.world.gravity / (1000 / this.world.fps);
-    }
-    this.setGravity();
-
-    var self = this;
-
-    this.interval = setInterval(function() { self.draw(); }, this.world.fps);
-
-    $(this.canvasid).click(function(e){
-        var target = event.target || event.srcElement;
-        x = event.pageX - target.offsetLeft;
-        y = event.pageY - target.offsetTop;
-        self.starburst(x, y);
-    });
-}
-
-
+})(jQuery);
