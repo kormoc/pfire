@@ -139,7 +139,7 @@ function pfire(canvas, options) {
         // Trail life
         'trail':            options.trail           || 0.05,
         // Update Speed
-        'fps':              options.fps             || 33,
+        'fps':              options.fps             || 16,
         'color':            options.color           || {
             'r': Math.random()*255>>0,
             'g': Math.random()*255>>0,
