@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Particle Fire in HTM5</title>
+        <meta charset="utf-8">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <script src="pfire.js"></script>
+
+    </head>
+    <body>
+        <canvas id="pfire1"></canvas>
+        <canvas id="pfire2"></canvas>
+        <canvas id="pfire3"></canvas>
+        <canvas id="pfire4"></canvas>
+        <canvas id="pfire5"></canvas>
+        <canvas id="pfire6"></canvas>
+        <canvas id="pfire7"></canvas>
+        <canvas id="pfire8"></canvas>
+        <canvas id="pfire9"></canvas>
+        
+        <script>
+            $(function() {
+                var options = {
+                    'W':            200,
+                    'H':            200,
+                    'particles':    20
+                };
+                
+                $('#pfire1').pfire(options);
+                $('#pfire2').pfire(options);
+                $('#pfire3').pfire(options);
+                $('#pfire4').pfire(options);
+                $('#pfire5').pfire(options);
+                $('#pfire6').pfire(options);
+                $('#pfire7').pfire(options);
+                $('#pfire8').pfire(options);
+                $('#pfire9').pfire(options);
+                
+            });
+        </script>
+    </body>
+</html>
