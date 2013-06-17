@@ -148,7 +148,7 @@ function pfire(canvas, options) {
         'max_velocity':         options.max_velocity        || 2,
         'velocity_multiplier':  options.velocity_multiplier || 1,
         'in_air_height':        options.in_air_height       || 50,
-        
+
     }
 
     // Clear canvas
@@ -237,7 +237,7 @@ function pfire(canvas, options) {
         this.canvas.width = W;
         this.canvas.height = H;
     }
-    
+
     this.setGravity = function(gravity) {
         if (gravity)
             this.world.gravity = gravity;

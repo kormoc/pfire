@@ -5,14 +5,14 @@
         <meta charset="utf-8">
 
         <style>
-            
+
         </style>
-        
+
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
         <script src="pfire.js"></script>
-        
+
     </head>
     <body>
         <canvas id="canvas"></canvas>
@@ -73,7 +73,7 @@
                     },
                 });
                 $( "#particles_amount" ).text( $( "#particles" ).slider( "value" ));
-                
+
                 $( "#gravity" ).slider({
                     value:  .5,
                     min:    0,
@@ -85,7 +85,7 @@
                     }
                 });
                 $( "#gravity_amount" ).text( $( "#gravity" ).slider( "value" ));
-                
+
                 $( "#max_velocity" ).slider({
                     value:  2,
                     min:    0,
@@ -97,7 +97,7 @@
                     }
                 });
                 $( "#max_velocity_amount" ).text( $( "#max_velocity" ).slider( "value" ));
-                
+
                 $( "#velocity_multiplier" ).slider({
                     value:  1,
                     min:    0,
@@ -109,7 +109,7 @@
                     }
                 });
                 $( "#velocity_multiplier_amount" ).text( $( "#velocity_multiplier" ).slider( "value" ));
-                
+
                 $( "#in_air_height" ).slider({
                     value:  50,
                     min:    25,
@@ -121,7 +121,7 @@
                     }
                 });
                 $( "#in_air_height_amount" ).text( $( "#in_air_height" ).slider( "value" ));
-                
+
                 $( "#trail_length" ).slider({
                     value:  0.05,
                     min:    0.001,
@@ -133,27 +133,27 @@
                     }
                 });
                 $( "#trail_length_amount" ).text( $( "#trail_length" ).slider( "value" ));
-                
+
                 $( "#colors" ).buttonset();
-                
+
                 $( "#single_color").change(function() { pf.world.colors = 'global'; });
                 $( "#rainbow_color").change(function() { pf.world.colors = ''; });
-                
+
                 $( "#randomize" ).button().click(function( event ) { pf.randomize(); });
                 $( "#starburst" ).button().click(function( event ) { pf.starburst(); });
-                
+
                 pf = new pfire('#canvas', {
                     'gravity':              $( "#gravity" ).slider( "value" ),
                     'max_velocity':         $( "#max_velocity" ).slider( "value" ),
                     'velocity_multiplier':  $( "#velocity_multiplier" ).slider( "value" ),
                     'in_air_height_amount': $( "#in_air_height" ).slider( "value" ),
                 });
-                
+
                 pf.updateSize($(document).width()-40, $(document).height()-40);
                 pf.addParticles($( "#particles" ).slider( "value" ));
             });
-            
-            
+
+
         </script>
     </body>
 </html>
