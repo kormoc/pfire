@@ -30,6 +30,10 @@
                 <td width="100%"><div id="max_velocity"></div></td>
             </tr>
             <tr>
+                <td style="white-space: nowrap;">Velocity Multiplier: <span id="velocity_multiplier_amount"></span></td>
+                <td width="100%"><div id="velocity_multiplier"></div></td>
+            </tr>
+            <tr>
                 <td style="white-space: nowrap;">In Air Height: <span id="in_air_height_amount"></span></td>
                 <td width="100%"><div id="in_air_height"></div></td>
             </tr>
@@ -94,6 +98,18 @@
                 });
                 $( "#max_velocity_amount" ).text( $( "#max_velocity" ).slider( "value" ));
                 
+                $( "#velocity_multiplier" ).slider({
+                    value:  1,
+                    min:    0,
+                    max:    16,
+                    step:   1,
+                    slide: function( event, ui ) {
+                        $( "#velocity_multiplier_amount" ).text( ui.value );
+                        pf.world.velocity_multiplier = ui.value;
+                    }
+                });
+                $( "#velocity_multiplier_amount" ).text( $( "#velocity_multiplier" ).slider( "value" ));
+                
                 $( "#in_air_height" ).slider({
                     value:  50,
                     min:    25,
@@ -129,6 +145,7 @@
                 pf = new pfire('#canvas', {
                     'gravity':              $( "#gravity" ).slider( "value" ),
                     'max_velocity':         $( "#max_velocity" ).slider( "value" ),
+                    'velocity_multiplier':  $( "#velocity_multiplier" ).slider( "value" ),
                     'in_air_height_amount': $( "#in_air_height" ).slider( "value" ),
                 });
                 

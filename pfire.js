@@ -31,8 +31,8 @@ function particle(pfire) {
     }
 
     this.move = function() {
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * pfire.world.velocity_multiplier;
+        this.y += this.vy * pfire.world.velocity_multiplier;
 
         this.vy += pfire.world.gpf;
 
@@ -133,20 +133,22 @@ function pfire(canvas, options) {
     this.MAX_PARTICLES = 1;
 
     this.world = {
-        'gravity':          options.gravity         || .5,
+        'gravity':              options.gravity             || .5,
         // Colors for particles?
-        'colors':           options.colors          || 'global',
+        'colors':               options.colors              || 'global',
         // Trail life
-        'trail':            options.trail           || 0.05,
+        'trail':                options.trail               || 0.05,
         // Update Speed
-        'fps':              options.fps             || 16,
-        'color':            options.color           || {
+        'fps':                  options.fps                 || 16,
+        'color':                options.color               || {
             'r': Math.random()*255>>0,
             'g': Math.random()*255>>0,
             'b': Math.random()*255>>0,
         },
-        'max_velocity':     options.max_velocity    || 2,
-        'in_air_height':    options.in_air_height   || 50,
+        'max_velocity':         options.max_velocity        || 2,
+        'velocity_multiplier':  options.velocity_multiplier || 1,
+        'in_air_height':        options.in_air_height       || 50,
+        
     }
 
     // Clear canvas
