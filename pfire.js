@@ -149,9 +149,6 @@ function pfire(canvas, options) {
         'in_air_height':    options.in_air_height   || 50,
     }
 
-    // Calculate the gravity per frame
-    this.world.gpf = this.world.gravity / (1000 / this.world.fps);
-
     // Clear canvas
     this.ctx.globalCompositeOperation = "destination-over";
     this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
@@ -223,11 +220,6 @@ function pfire(canvas, options) {
             p.direction = Math.random() * 360;
             p.setVelocity(Math.random() * 2);
         }
-        this.world.gravity = Math.random();
-        if (Math.random() * 2>>0)
-            this.world.colors='global';
-        else
-            this.world.colors='';
     }
 
     this.updateSize = function(W, H) {
@@ -243,6 +235,13 @@ function pfire(canvas, options) {
         this.canvas.width = W;
         this.canvas.height = H;
     }
+    
+    this.setGravity = function(gravity) {
+        if (gravity)
+            this.world.gravity = gravity;
+        this.world.gpf = this.world.gravity / (1000 / this.world.fps);
+    }
+    this.setGravity();
 
     var self = this;
 

@@ -8,17 +8,135 @@
             
         </style>
         
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
         <script src="pfire.js"></script>
         
     </head>
     <body>
         <canvas id="canvas"></canvas>
+        <table>
+            <tr>
+                <td style="white-space: nowrap;">Particles: <span id="particles_amount"></span></td>
+                <td width="100%"><div id="particles"></div></td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">Gravity: <span id="gravity_amount"></span></td>
+                <td width="100%"><div id="gravity"></div></td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">Max Velocity: <span id="max_velocity_amount"></span></td>
+                <td width="100%"><div id="max_velocity"></div></td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">In Air Height: <span id="in_air_height_amount"></span></td>
+                <td width="100%"><div id="in_air_height"></div></td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">Trail Clearing: <span id="trail_length_amount"></span></td>
+                <td width="100%"><div id="trail_length"></div></td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">Colors:</td>
+                <td><div id="colors">
+                    <input type="radio" id="single_color" name="radio" checked="checked" /><label for="single_color">Single</label>
+                    <input type="radio" id="rainbow_color" name="radio"/><label for="rainbow_color">Rainbow</label>
+                </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap;">Actions:</td>
+                <td width="100%">
+                    <button id="randomize">Randomize</button>
+                    <button id="starburst">Starburst</button>
+                </td>
+            </tr>
+        </table>
         <script>
-            pf = new pfire('#canvas', {});
-            pf.updateSize($(document).width()-20, $(document).height()-20);
-            pf.addParticles(1500);
-            pf.randomize();
+            $(function() {
+                $( "#particles" ).slider({
+                    value:  100,
+                    min:    0,
+                    max:    5000,
+                    step:   25,
+                    slide: function( event, ui ) {
+                        $( "#particles_amount" ).text( ui.value );
+                        while (pf.particles.length > ui.value)
+                            pf.particles.pop();
+                        while (pf.particles.length < ui.value)
+                            pf.addParticle();
+                    },
+                });
+                $( "#particles_amount" ).text( $( "#particles" ).slider( "value" ));
+                
+                $( "#gravity" ).slider({
+                    value:  .5,
+                    min:    0,
+                    max:    20,
+                    step:   .05,
+                    slide: function( event, ui ) {
+                        $( "#gravity_amount" ).text( ui.value );
+                        pf.setGravity(ui.value);
+                    }
+                });
+                $( "#gravity_amount" ).text( $( "#gravity" ).slider( "value" ));
+                
+                $( "#max_velocity" ).slider({
+                    value:  2,
+                    min:    0,
+                    max:    200,
+                    step:   1,
+                    slide: function( event, ui ) {
+                        $( "#max_velocity_amount" ).text( ui.value );
+                        pf.world.max_velocity = ui.value;
+                    }
+                });
+                $( "#max_velocity_amount" ).text( $( "#max_velocity" ).slider( "value" ));
+                
+                $( "#in_air_height" ).slider({
+                    value:  50,
+                    min:    25,
+                    max:    500,
+                    step:   25,
+                    slide: function( event, ui ) {
+                        $( "#in_air_height_amount" ).text( ui.value );
+                        pf.world.in_air_height = ui.value;
+                    }
+                });
+                $( "#in_air_height_amount" ).text( $( "#in_air_height" ).slider( "value" ));
+                
+                $( "#trail_length" ).slider({
+                    value:  0.05,
+                    min:    0.001,
+                    max:    0.25,
+                    step:   0.001,
+                    slide: function( event, ui ) {
+                        $( "#trail_length_amount" ).text( ui.value );
+                        pf.world.trail = ui.value;
+                    }
+                });
+                $( "#trail_length_amount" ).text( $( "#trail_length" ).slider( "value" ));
+                
+                $( "#colors" ).buttonset();
+                
+                $( "#single_color").change(function() { pf.world.colors = 'global'; });
+                $( "#rainbow_color").change(function() { pf.world.colors = ''; });
+                
+                $( "#randomize" ).button().click(function( event ) { pf.randomize(); });
+                $( "#starburst" ).button().click(function( event ) { pf.starburst(); });
+                
+                pf = new pfire('#canvas', {
+                    'gravity':              $( "#gravity" ).slider( "value" ),
+                    'max_velocity':         $( "#max_velocity" ).slider( "value" ),
+                    'in_air_height_amount': $( "#in_air_height" ).slider( "value" ),
+                });
+                
+                pf.updateSize($(document).width()-40, $(document).height()-40);
+                pf.addParticles($( "#particles" ).slider( "value" ));
+            });
+            
+            
         </script>
     </body>
 </html>
