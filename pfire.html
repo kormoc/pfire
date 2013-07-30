@@ -8,11 +8,37 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
         <script src="pfire.js"></script>
+        <style>
+        body {
+            font-family: Rockwell, "Courier Bold", Courier, Georgia, Times, "Times New Roman", serif;
+        }
+        #canvas-options td {
+            padding: 10px;
+        }
+        #canvas-options {
+            width: 50%;
+        }
+        .ui-slider {
+            margin:20px 0;
+        }
+        .ui-slider .slider-amount {
+            background-color: #f1f1f1;
+            padding: 5px;
+            border-radius: 10px;
+            font-size: 70%;
+            display: block;
+            position: absolute;
+            right: -110px;
+            top: -6px;
+            width: 80px;
+            text-align: center;
+        }
+        </style>
 
     </head>
     <body>
         <canvas id="canvas"></canvas>
-        <table>
+        <table id="canvas-options">
             <tr>
                 <td style="white-space: nowrap;">Particles: <span id="particles_amount"></span></td>
                 <td width="100%"><div id="particles"></div></td>
@@ -42,6 +68,11 @@
                 <td><div id="colors">
                     <input type="radio" id="single_color" name="radio" checked="checked" /><label for="single_color">Single</label>
                     <input type="radio" id="rainbow_color" name="radio"/><label for="rainbow_color">Rainbow</label>
+                    <p>or Custom: 
+                        <div id="color-r" data-color="red"><span class="slider-amount">red: 200</span></div>
+                        <div id="color-g" data-color="green"><span class="slider-amount">green: 200</span></div>
+                        <div id="color-b" data-color="blue"><span class="slider-amount">blue: 200</span></div>
+                    </p>
                 </div>
                 </td>
             </tr>
@@ -55,6 +86,24 @@
         </table>
         <script>
             $(function() {
+                $("#color-r, #color-g, #color-b").slider({
+                    value:  200,
+                    min:    0,
+                    max:    255,
+                    slide: function( event, ui ) {
+                        var color = $(this).data('color'),
+                        val = ui.value;
+                        if(color === 'red') {
+                            $('#canvas').data('pfire').settings.color.r = val;
+                        } else if(color === 'green') {
+                            $('#canvas').data('pfire').settings.color.g = val;
+                        } else {
+                            $('#canvas').data('pfire').settings.color.b = val;
+                        }
+                        $(this).find('.slider-amount').text( color +': '+ ui.value);
+                    }
+                });
+
                 $( "#particles" ).slider({
                     value:  100,
                     min:    0,
@@ -63,7 +112,7 @@
                     slide: function( event, ui ) {
                         $( "#particles_amount" ).text( ui.value );
                         $('#canvas').data('pfire').setParticles(ui.value);
-                    },
+                    }
                 });
                 $( "#particles_amount" ).text( $( "#particles" ).slider( "value" ));
 
